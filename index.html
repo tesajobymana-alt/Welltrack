@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Well Track + Core Glow</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: linear-gradient(135deg, #89f7fe, #fbc2eb);
+}
+
+.screen { display:none; padding:20px; }
+.active { display:block; }
+
+h1,h2 { text-align:center; }
+
+.card {
+  background:white;
+  padding:15px;
+  border-radius:15px;
+  margin:10px 0;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}
+
+button {
+  width:100%;
+  padding:12px;
+  margin-top:8px;
+  border:none;
+  border-radius:12px;
+  background:#6c63ff;
+  color:white;
+}
+
+.small { width:30%; display:inline-block; }
+
+.nav {
+  position:fixed;
+  bottom:0;
+  width:100%;
+  background:white;
+  display:flex;
+  justify-content:space-around;
+  padding:10px;
+}
+
+.robot { font-size:60px; text-align:center; }
+</style>
+</head>
+
+<body>
+
+<!-- HOME -->
+<div id="home" class="screen active">
+<h1>Well Track</h1>
+
+<div class="card">
+<h3>👤 Your Name</h3>
+<input id="nameInput" placeholder="Enter name">
+<button onclick="saveName()">Save</button>
+<p id="username"></p>
+</div>
+
+<div class="card">
+<h3>🔥 Streak: <span id="streak">0</span></h3>
+<h3>⭐ Points: <span id="points">0</span></h3>
+<p id="badge"></p>
+</div>
+
+<div class="card">
+<h3>💡 Daily Tip</h3>
+<p id="tip"></p>
+</div>
+
+<div class="card">
+<h3>🤖 Core Glow</h3>
+<p id="robotStatus">Disconnected</p>
+<button onclick="connectRobot()">Connect Robot</button>
+</div>
+</div>
+
+<!-- PHYSICAL -->
+<div id="physical" class="screen">
+<h2>🏃 Physical</h2>
+
+<div class="card">
+<h3>💧 Water</h3>
+<button onclick="addWater()">+1 Glass</button>
+<p id="water"></p>
+</div>
+
+<div class="card">
+<h3>😴 Sleep</h3>
+<input id="sleep" placeholder="Hours">
+<button onclick="saveSleep()">Save</button>
+<p id="sleepText"></p>
+</div>
+
+<div class="card">
+<h3>🏃 Exercise</h3>
+<button onclick="addPoints()">Done</button>
+</div>
+</div>
+
+<!-- MENTAL -->
+<div id="mental" class="screen">
+<h2>🧠 Core Glow</h2>
+
+<div class="card">
+<div class="robot">🤖</div>
+<p id="robotMsg">Connect robot first</p>
+</div>
+
+<div class="card">
+<h3>Mood</h3>
+<button class="small" onclick="setMood('happy')">😊</button>
+<button class="small" onclick="setMood('okay')">😐</button>
+<button class="small" onclick="setMood('sad')">😞</button>
+<p id="mood"></p>
+</div>
+
+<div class="card">
+<h3>📝 Why?</h3>
+<input id="note">
+<button onclick="saveNote()">Save</button>
+<p id="noteText"></p>
+</div>
+
+<div class="card">
+<h3>🙏 Gratitude</h3>
+<input id="g1" placeholder="1">
+<input id="g2" placeholder="2">
+<input id="g3" placeholder="3">
+<button onclick="saveGratitude()">Save</button>
+</div>
+
+<div class="card">
+<h3>Stress</h3>
+<input type="range" min="1" max="10" onchange="stress(this.value)">
+<p id="stressText"></p>
+</div>
+
+<div class="card">
+<h3>🌬 Breathing</h3>
+<button onclick="breathing()">Start</button>
+<p id="breath"></p>
+</div>
+
+<div class="card">
+<h3>💬 Chat</h3>
+<input id="chatInput">
+<button onclick="chat()">Send</button>
+<p id="chatOut"></p>
+</div>
+</div>
+
+<!-- HABITS -->
+<div id="habits" class="screen">
+<h2>📅 Daily Habits</h2>
+
+<button onclick="completeHabit(this)">Study</button>
+<button onclick="completeHabit(this)">Drink Water</button>
+<button onclick="completeHabit(this)">Exercise</button>
+
+<p id="progress"></p>
+</div>
+
+<!-- INSIGHTS -->
+<div id="insights" class="screen">
+<h2>📊 Insights</h2>
+<p id="insight"></p>
+</div>
+
+<!-- NAV -->
+<div class="nav">
+<button onclick="show('home')">🏠</button>
+<button onclick="show('physical')">🏃</button>
+<button onclick="show('mental')">🧠</button>
+<button onclick="show('habits')">📅</button>
+<button onclick="show('insights')">📊</button>
+</div>
+
+<script>
+let points=localStorage.getItem("points")||0;
+let streak=localStorage.getItem("streak")||0;
+let water=localStorage.getItem("water")||0;
+
+document.getElementById("points").innerText=points;
+document.getElementById("streak").innerText=streak;
+document.getElementById("water").innerText=water+" glasses";
+
+// NAME
+function saveName(){
+ let n=document.getElementById("nameInput").value;
+ localStorage.setItem("name",n);
+ document.getElementById("username").innerText="Hi "+n;
+}
+
+// NAV
+function show(s){
+ document.querySelectorAll('.screen').forEach(x=>x.classList.remove('active'));
+ document.getElementById(s).classList.add('active');
+}
+
+// PHYSICAL
+function addWater(){
+ water++;
+ localStorage.setItem("water",water);
+ document.getElementById("water").innerText=water+" glasses";
+ addPoints();
+}
+
+function saveSleep(){
+ let s=document.getElementById("sleep").value;
+ localStorage.setItem("sleep",s);
+ document.getElementById("sleepText").innerText=s+" hrs";
+}
+
+function addPoints(){
+ points++;
+ streak++;
+ localStorage.setItem("points",points);
+ localStorage.setItem("streak",streak);
+ document.getElementById("points").innerText=points;
+ document.getElementById("streak").innerText=streak;
+ updateBadge();
+}
+
+// BADGES
+function updateBadge(){
+ let b="";
+ if(streak>3) b="🏆 3 Day Streak!";
+ if(streak>7) b="🔥 7 Day Streak!";
+ document.getElementById("badge").innerText=b;
+}
+
+// ROBOT
+let connected=false;
+
+function connectRobot(){
+ connected=true;
+ document.getElementById("robotStatus").innerText="Connected ✅";
+ document.getElementById("robotMsg").innerText="Hi I'm Core Glow 🤖";
+}
+
+function setMood(m){
+ if(!connected){alert("Connect robot first");return;}
+ document.getElementById("mood").innerText="Mood: "+m;
+
+ let msg="";
+ if(m=="happy") msg="You're doing great ✨";
+ if(m=="okay") msg="Keep going 👍";
+ if(m=="sad") msg="I'm here 💛";
+
+ document.getElementById("robotMsg").innerText=msg;
+ localStorage.setItem("mood",m);
+}
+
+function stress(v){
+ document.getElementById("stressText").innerText="Stress: "+v;
+ if(v>7){
+  document.getElementById("robotMsg").innerText="Let's relax 🌬";
+ }
+}
+
+// EXTRA
+function saveNote(){
+ let n=document.getElementById("note").value;
+ document.getElementById("noteText").innerText=n;
+}
+
+function saveGratitude(){
+ addPoints();
+}
+
+function breathing(){
+ document.getElementById("breath").innerText="Inhale... Hold... Exhale...";
+}
+
+function chat(){
+ let t=document.getElementById("chatInput").value.toLowerCase();
+ let r="I understand.";
+
+ if(t.includes("sad")) r="I'm here 💛";
+ if(t.includes("tired")) r="Take rest 😴";
+ if(t.includes("happy")) r="That's awesome 🎉";
+
+ document.getElementById("chatOut").innerText=r;
+}
+
+// HABITS
+function completeHabit(btn){
+ btn.innerText="✔ "+btn.innerText;
+ addPoints();
+}
+
+// INSIGHTS
+function insights(){
+ let mood=localStorage.getItem("mood");
+ let sleep=localStorage.getItem("sleep");
+
+ let txt="Keep going!";
+ if(mood=="sad") txt="Take care 💛";
+ if(sleep<6) txt="Sleep more 😴";
+
+ document.getElementById("insight").innerText=txt;
+}
+insights();
+
+// DAILY TIP
+let tips=[
+"Drink water 💧",
+"Take a walk 🚶",
+"Talk to a friend 💬",
+"Sleep early 😴"
+];
+document.getElementById("tip").innerText=
+tips[Math.floor(Math.random()*tips.length)];
+</script>
+
+</body>
+  </html>
